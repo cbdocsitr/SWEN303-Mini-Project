@@ -1,7 +1,7 @@
 extends ../node_modules/jade-bootstrap/_bootstrap
 
 block body
-	+navbar("Colenso Database", "dropdown_menu")
+	+navbar("Colenso Database", "dropdown_menu", "inverse")
 		+nav_item("/") Home 
 		+nav_item_dropdown("/search-text", active)(label="Search")
 			+nav_item("/search-text", active) Text Search
@@ -17,13 +17,29 @@ block body
 			+nav_item("/newspaper-letters") Newspaper Letters
 			+nav_item("/publications") Publications
 	.container
-		h1 Search Full Text
-	.container
-		form(action="/search-text", method="get")
-			input(type="text", name="searchString")
-			input(type="submit")
-			
-	ul
-		each val, index in results
-			li 
-				a(href = "#{val.href}") #{val.title}
+		h3 Search Full Text
+	if(!visited)
+		.container
+			p 
+			| Enter a text string to search.
+			| You can search for multiple strings using AND, OR, and NOT.
+			form(action="/search-text", method="get")
+				input(type="text", name="searchString")
+				input(type="submit")
+	else
+		.container
+			p 
+			| Refine Current Search:
+			form(action="/search-text", method="get")
+				input(type="text", name="searchStringRefined")
+				input(type="submit")
+			|			OR
+			| New search:
+			form(action="/search-text", method="get")
+				input(type="text", name="searchString")
+				input(type="submit")
+			br
+		ul
+			each val, index in results
+				li 
+					a(href = "#{val.href}") #{val.title}

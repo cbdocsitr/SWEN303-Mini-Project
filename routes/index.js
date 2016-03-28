@@ -21,11 +21,36 @@ function (error, result) {
 
 //SEARCH TEXT
 router.get('/search-text', function(req, res) {
-client.execute(basexQuery + "//*[. contains text '" + req.query.searchString + "' ]",
+if(req.query.searchString){
+	var queryArray = req.query.searchString.split(" ");
+	var queryString = "";
+	var contains1 = "//*[. contains text '";
+	var contains2 = "']";
+	var i = 0;
+	if(queryArray[i]==="NOT"){
+		contains1 = "//*[not(. contains text '";
+		contains2 = "')]";
+		++i;
+	}
+	while(i < queryArray.length){
+		queryString += queryArray[i];
+		++i;
+		if(i < queryArray.length){
+			if(queryArray[i] ==="OR"){
+				queryString += "' ftor '";
+			}else if(queryArray[i] === "AND"){
+				queryString += "' ftand '";
+			}else{
+				queryString = queryString + "' ftand '" + queryArray[i];
+			}	
+		}
+		++i;
+	}
+}
+client.execute(basexQuery + contains1 + queryString + contains2,
 function (error, result) {
 	var $;
 	var list = [];
-	//var n;
 	if(error){ console.error(error)}
 	else {
 		if(req.query.searchString == undefined || req.query.searchString == null){
@@ -42,7 +67,7 @@ function (error, result) {
 				}
 				list.push({title: title, href: "/document/" + id});
 			});
-			res.render('search-text', { results: list});
+			res.render('search-text', { visited: true, number: list.length, results: list});
 		}
 	}
 		}
