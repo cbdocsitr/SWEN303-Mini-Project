@@ -1,0 +1,20 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+block body
+	+navbar("Colenso Database", "dropdown_menu")
+		+nav_item("/") Home 
+		+nav_item("/search") Search 
+		+nav_item_dropdown("#")(label="Browse the Collection ")
+			+nav_header All Authors
+			+nav_item("/letters") Letters
+			+nav_item("/diary-entries") Diary Entries
+			+nav_divider
+			+nav_header Colenso's Documents
+			+nav_item("/colenso-diary") Diary
+			+nav_item("/private-letters", active) Private Letters
+			+nav_item("/newspaper-letters") Newspaper Letters
+			+nav_item("/publications") Publications
+	.container
+		h1 Broswe By Author??
+	.container
+		p Please browse!!!!!!

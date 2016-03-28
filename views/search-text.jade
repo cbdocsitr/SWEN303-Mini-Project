@@ -1,0 +1,34 @@
+extends ../node_modules/jade-bootstrap/_bootstrap
+
+block body
+	+navbar("Colenso Database", "dropdown_menu")
+		+nav_item("/") Home 
+		+nav_item_dropdown("/search-text", active)(label="Search")
+			+nav_item("/search-text", active) Text Search
+			+nav_item("/search-markup") Markup Search
+		+nav_item_dropdown("#")(label="Browse the Collection ")
+			+nav_header All Authors
+			+nav_item("/letters") Letters
+			+nav_item("/diary-entries") Diary Entries
+			+nav_divider
+			+nav_header Colenso's Documents
+			+nav_item("/colenso-diary") Diary
+			+nav_item("/private-letters") Private Letters
+			+nav_item("/newspaper-letters") Newspaper Letters
+			+nav_item("/publications") Publications
+	.container
+		h1 Search Full Text
+	.container
+		form(action="/search-text", method="get")
+			input(type="text", name="searchString")
+			input(type="submit")
+			
+	.container
+		p #{number} results found
+	//.container
+		p !{results}
+	.container
+		each val, index in results
+			li= index+1 + ': ' + val 
+	//		- var link = val
+	//		p <a href=link> Read Document </a>
