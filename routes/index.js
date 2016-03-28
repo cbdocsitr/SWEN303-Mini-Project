@@ -54,4 +54,16 @@ router.get('/search-markup', function(req, res) {
 	}
 });
 
+//Document display route
+router.get("/document/:id",function(req,res){
+	client.execute(basexQuery + "(//*[@xml:id='PrLBrghtn-0001'])",
+		function (error, result) {
+			if(error){ console.error(error)}
+			else{
+				console.log(result);
+			}
+		}
+	);
+});
+
 module.exports = router;
