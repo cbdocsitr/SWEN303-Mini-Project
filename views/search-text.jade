@@ -23,12 +23,7 @@ block body
 			input(type="text", name="searchString")
 			input(type="submit")
 			
-	.container
-		p #{number} results found
-	//.container
-		p !{results}
-	.container
+	ul
 		each val, index in results
-			li= index+1 + ': ' + val 
-	//		- var link = val
-	//		p <a href=link> Read Document </a>
+			li 
+				a(href = "#{val.href}") #{val.title}

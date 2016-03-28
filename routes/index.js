@@ -23,16 +23,26 @@ function (error, result) {
 router.get('/search-text', function(req, res) {
 client.execute(basexQuery + "//*[. contains text '" + req.query.searchString + "' ]",
 function (error, result) {
+	var $;
+	var list = [];
+	//var n;
 	if(error){ console.error(error)}
 	else {
 		if(req.query.searchString == undefined || req.query.searchString == null){
 			res.render('search-text', { title: 'Colenso Databse', results: " "});
 		}else{
-			console.log(result);
-			var r = result.result;
-			var resultArray = r.split("\n");
-			var n = resultArray.length;
-			res.render('search-text', { title: 'Colenso Databse', results: resultArray, number: n});
+			$  = cheerio.load(result.result, {
+				xmlMode: true
+			});
+			$("TEI").each(function(i, elem){
+				var title = $(elem).find("title").first().text();
+				var id = $(elem).attr("xml:id");
+				if(!id){
+					return;
+				}
+				list.push({title: title, href: "/document/" + id});
+			});
+			res.render('search-text', { results: list});
 		}
 	}
 		}
@@ -48,7 +58,7 @@ router.get('/search-markup', function(req, res) {
 		function (error, result) {
 			if(error){ console.error(error)}
 			else {
-				res.render('search-markup', { title: 'Colenso Databse', results: result.result});
+				res.render('search-text', { results: 'Colenso Databse', results: result.result});
 			}
 				}
 				);
