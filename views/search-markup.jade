@@ -3,44 +3,20 @@ extends ../node_modules/jade-bootstrap/_bootstrap
 block body
 	+navbar("Colenso Database", "dropdown_menu", "inverse")
 		+nav_item("/") Home 
-		+nav_item_dropdown("/search-text", active)(label="Search")
-			+nav_item("/search-text") Text Search
-			+nav_item("/search-markup", active) Markup Search
-		+nav_item_dropdown("#")(label="Browse the Collection ")
-			+nav_header All Authors
-			+nav_item("/letters") Letters
-			+nav_item("/diary-entries") Diary Entries
-			+nav_divider
-			+nav_header Colenso's Documents
-			+nav_item("/colenso-diary") Diary
-			+nav_item("/private-letters") Private Letters
-			+nav_item("/newspaper-letters") Newspaper Letters
-			+nav_item("/publications") Publications
+		+nav_item_dropdown("#")(label="Search")
+			+nav_item("/search-text") Search by Text
+			+nav_item("/search-markup") Search by Markup
+		+nav_item_dropdown("#")(label="Browse the Collection")
+			+nav_item("/browse") Browse by Correspondents
 	.container
-		h3 Search By Markup
-	if(!visited)
-		.container
-			p 
-			| Enter a text string to search.
-			| You can search for multiple strings using AND, OR, and NOT.
-			form(action="/search-markup", method="get")
-				input(type="text", name="searchString")
-				input(type="submit")
-	else
-		.container
-			p 
-			| Refine Current Search:
-			form(action="/search-markup", method="get")
-				input(type="text", name="searchStringRefined")
-				input(type="submit")
-			|			OR
-			| New search:
-			form(action="/search-markup", method="get")
-				input(type="text", name="searchString")
-				input(type="submit")
-			br
-			| !{number}
-		ul
-			each val, index in results
-				li 
-					a(href = "#{val.href}") !{val.title}
+		h3 Search by Text
+		form(action="/search-markup", method="get")
+			input(type="text", name="searchString")
+			input(type="submit")
+			if(visited)
+				br
+				div #{number} Results
+				ul
+					each val, index in results
+						li 
+							a(href = "#{val.href}") !{val.title}

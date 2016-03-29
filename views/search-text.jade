@@ -3,40 +3,20 @@ extends ../node_modules/jade-bootstrap/_bootstrap
 block body
 	+navbar("Colenso Database", "dropdown_menu", "inverse")
 		+nav_item("/") Home 
-		+nav_item_dropdown("/search-text", active)(label="Search")
-			+nav_item("/search-text", active) Text Search
-			+nav_item("/search-markup") Markup Search
-		+nav_item_dropdown("#")(label="Browse the Collection ")
-			+nav_header All Authors
-			+nav_item("/letters") Letters
-			+nav_item("/diary-entries") Diary Entries
-			+nav_divider
-			+nav_header Colenso's Documents
-			+nav_item("/colenso-diary") Diary
-			+nav_item("/private-letters") Private Letters
-			+nav_item("/newspaper-letters") Newspaper Letters
-			+nav_item("/publications") Publications
+		+nav_item_dropdown("#")(label="Search")
+			+nav_item("/search-text") Search by Text
+			+nav_item("/search-markup") Search by Markup
+		+nav_item_dropdown("#")(label="Browse the Collection")
+			+nav_item("/browse") Browse by Correspondents
 	.container
-		h3 Search Full Text
-	if(!visited)
-		.container
-			form(action="/search-text", method="get")
-				input(type="text", name="searchString")
-				input(type="submit")
-	else
-		.container
-			div Refine Current Search:
-			form(action="/search-text", method="get")
-				input(type="text", name="searchStringRefined")
-				input(type="submit")
-			div OR
-			div New search:
-			form(action="/search-text", method="get")
-				input(type="text", name="searchString")
-				input(type="submit")
-			br
-			div #{number} Results
-		ul
-			each val, index in results
-				li 
-					a(href = "#{val.href}") #{val.title}
+		h3 Search by Text
+		form(action="/search-text", method="get")
+			input(type="text", name="searchString")
+			input(type="submit")
+			if(visited)
+				br
+				div #{number} Results
+				ul
+					each val, index in results
+						li 
+							a(href = "#{val.href}") #{val.title}

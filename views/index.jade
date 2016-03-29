@@ -1,23 +1,15 @@
 extends ../node_modules/jade-bootstrap/_bootstrap
 
 block body
-	+navbar("Colenso Database", "dropdown_menu")
-		+nav_item("/", active) Home 
-		+nav_item_dropdown("/search-text")(label="Search")
-			+nav_item("/search-text") Text Search
-			+nav_item("/search-markup") Markup Search
-		+nav_item_dropdown("#")(label="Browse the Collection ")
-			+nav_header All Authors
-			+nav_item("/letters") Letters
-			+nav_item("/diary-entries") Diary Entries
-			+nav_divider
-			+nav_header Colenso's Documents
-			+nav_item("/colenso-diary") Diary
-			+nav_item("/private-letters") Private Letters
-			+nav_item("/newspaper-letters") Newspaper Letters
-			+nav_item("/publications") Publications
+	+navbar("Colenso Database", "dropdown_menu", "inverse")
+		+nav_item("/") Home 
+		+nav_item_dropdown("#")(label="Search")
+			+nav_item("/search-text") Search by Text
+			+nav_item("/search-markup") Search by Markup
+		+nav_item_dropdown("#")(label="Browse the Collection")
+			+nav_item("/browse") Browse by Correspondents
 	.container
-		h1= title
+		h3= title
 		.container
-		p| Welcome to the #{title}. Please search for the files you require.
-		| We are based in !{place}.
+		p| Welcome to the #{title}. This database collects the letters, diary entries and other documetns assosiated with The Colenco Project. 
+		| To learn more about The Colenso Project please visit <a href="http://www.williamcolenso.co.nz/">their website</a>.
