@@ -90,28 +90,51 @@ function (error, result) {
 router.get('/search-markup', function(req, res) {
 	client.execute(basexQuery + req.query.searchString, function (error, result) {
 		var list = [];
-		var ids = [];
-		var id;
-		var title;
 		var results = result.result.split("\n");
 		client.execute(basexQuery + "for $n in (collection('Colenso/')" + req.query.searchString + ")\n" +
 		"return db:path($n)", function (error2, resultDB) {
 			var paths = resultDB.result.split("\n");
-			for(i = 0; i < paths.length; i++){
-				client.execute("XQUERY doc('Colenso/" + paths[i] + "')",
-				function(errXml,resXml) { 
-					var $ = cheerio.load(resXml.result, {
-						xmlMode: true
-					});
-					id = $.root().find("TEI").first().attr("xml:id");
-					title = results.shift();
-					list.push({title: title, id: id});
-					console.log(title+" "+id);
-				});
+			for(i = 0; i <paths.length; i++){
+				var id = paths[i].replace(".xml", "");
+				id = id.split("/")[2];
+				if(id[0]==="N"){
+					id = "Colenso-"+id;
+				}
+				console.log(i+": "+id);
+				var title = results[i];
+				list.push({title: title, href: "/document/" + id});
 			}
 			res.render('search-markup', { visited: true, number: list.length, results: list});
 		});
 	});
+});
+
+router.get("/browse",function(req,res){
+	res.render('browse', { title: "Colenso Database"});
+});
+
+router.get("/browse-author/:author",function(req,res){
+	client.execute(basexQuery + "(//author[@person= '" + req.params.id + "' ])",
+		function (error, result) {
+		if(error){ console.error(error)}
+		else{
+			var $ = cheerio.load(result.result, {
+				xmlMode: true
+			});
+			var title = $("title").first().text();
+			var author = $("author").first().text();
+			var body = $("body").first().html();
+			var templateData = { 
+				name: title,
+				author: author,
+				body: body,
+				href: "/download/" + req.params.id
+			};
+			res.render('browse', { templateData});
+		}
+	});
+	
+	res.render('browse', { title: "Colenso Database"});
 });
 
 //Document display route
@@ -124,10 +147,13 @@ router.get("/document/:id",function(req,res){
 					xmlMode: true
 				});
 				var title = $("title").first().text();
+				var author = $("author").first().text();
 				var body = $("body").first().html();
 				var templateData = { 
 					name: title,
-					body: body
+					author: author,
+					body: body,
+					href: "/download/" + req.params.id
 				};
 				res.render('document', templateData);
 			}

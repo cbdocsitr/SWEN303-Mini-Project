@@ -20,25 +20,22 @@ block body
 		h3 Search Full Text
 	if(!visited)
 		.container
-			p 
-			| Enter a text string to search.
-			| You can search for multiple strings using AND, OR, and NOT.
 			form(action="/search-text", method="get")
 				input(type="text", name="searchString")
 				input(type="submit")
 	else
 		.container
-			p 
-			| Refine Current Search:
+			div Refine Current Search:
 			form(action="/search-text", method="get")
 				input(type="text", name="searchStringRefined")
 				input(type="submit")
-			|			OR
-			| New search:
+			div OR
+			div New search:
 			form(action="/search-text", method="get")
 				input(type="text", name="searchString")
 				input(type="submit")
 			br
+			div #{number} Results
 		ul
 			each val, index in results
 				li 
