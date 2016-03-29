@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var basex = require('basex');
 var cheerio = require('cheerio');
+var http = require('http');
+var fs = require('fs');
 var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
 client.execute("OPEN Colenso");
 
@@ -26,11 +28,14 @@ if(req.query.searchString){
 	var queryString = "";
 	var contains1 = "//*[. contains text '";
 	var contains2 = "']";
+	var wildcard = false;
 	var i = 0;
 	if(queryArray[i]==="NOT"){
 		contains1 = "//*[not(. contains text '";
 		contains2 = "')]";
 		++i;
+	}else if(queryArray[i]==="*"){
+		wildcard = true;
 	}
 	while(i < queryArray.length){
 		queryString += queryArray[i];
@@ -46,6 +51,11 @@ if(req.query.searchString){
 		}
 		++i;
 	}
+}
+if(wildcard){
+	contains1 = "//*[.]";
+	queryString = "";
+	contains2 = "";
 }
 client.execute(basexQuery + contains1 + queryString + contains2,
 function (error, result) {
@@ -79,20 +89,31 @@ router.get('/search-markup', function(req, res) {
 	if(req.query.searchString == undefined || req.query.searchString == null){
 		res.render('search-markup', { title: 'Colenso Databse', results: " "});
 	}else{
-		client.execute(basexQuery + req.query.searchString,
-		function (error, result) {
-			if(error){ console.error(error)}
-			else {
-				res.render('search-text', { results: 'Colenso Databse', results: result.result});
+		client.execute(basexQuery + req.query.searchString, function (error, result) {
+			var list = [];
+			var results = result.result.split("\n");
+			for(i = 0; i < results.length; i++){
+				client.execute(basexQuery + "for $n in (collection('Colenso/')" + results[i] + ")\n" +
+				"return db:path($n)", function (error2, resultDB) {
+					client.execute("XQUERY doc('" + resultDB + "')", function (error3, xmlResult) {
+						var id;
+						var $ = cheerio.load(xmlResult.result, {
+							xmlMode: true
+						});
+						id = $.root().attr("xml:id");
+						console.log(id);
+						list.push({title: results[i], href: "/document/" + id});
+					});
+				});
 			}
-				}
-				);
+			res.render('search-markup', { visited: true, number: list.length, results: list});
+		});
 	}
 });
 
 //Document display route
 router.get("/document/:id",function(req,res){
-	client.execute(basexQuery + "(//*[@xml:id= '" + req.params.id + "' ])",
+	client.execute(basexQuery + "(//TEI[@xml:id= '" + req.params.id + "' ])",
 		function (error, result) {
 			if(error){ console.error(error)}
 			else{
@@ -109,6 +130,16 @@ router.get("/document/:id",function(req,res){
 			}
 		}
 	);
+});
+
+//Document download route
+router.get("/download/:id",function(req,res){
+	
+	var file = fs.createWriteStream(req.params.id+".xml");
+	var request = http.get("http://localhost:3000/document/"+req.params.id, function(response) {
+	  response.pipe(file);
+	});
+	
 });
 
 module.exports = router;

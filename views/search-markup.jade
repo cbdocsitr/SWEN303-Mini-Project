@@ -1,9 +1,9 @@
 extends ../node_modules/jade-bootstrap/_bootstrap
 
 block body
-	+navbar("Colenso Database", "dropdown_menu")
+	+navbar("Colenso Database", "dropdown_menu", "inverse")
 		+nav_item("/") Home 
-		+nav_item_dropdown("/search-text")(label="Search")
+		+nav_item_dropdown("/search-text", active)(label="Search")
 			+nav_item("/search-text") Text Search
 			+nav_item("/search-markup", active) Markup Search
 		+nav_item_dropdown("#")(label="Browse the Collection ")
@@ -17,10 +17,30 @@ block body
 			+nav_item("/newspaper-letters") Newspaper Letters
 			+nav_item("/publications") Publications
 	.container
-		h1 Search Markup
-	.container
-		form(action="/search-markup", method="get")
-			input(type="text", name="searchString")
-			input(type="submit")
-	.container
-		p !{results}
+		h3 Search By Markup
+	if(!visited)
+		.container
+			p 
+			| Enter a text string to search.
+			| You can search for multiple strings using AND, OR, and NOT.
+			form(action="/search-markup", method="get")
+				input(type="text", name="searchString")
+				input(type="submit")
+	else
+		.container
+			p 
+			| Refine Current Search:
+			form(action="/search-markup", method="get")
+				input(type="text", name="searchStringRefined")
+				input(type="submit")
+			|			OR
+			| New search:
+			form(action="/search-markup", method="get")
+				input(type="text", name="searchString")
+				input(type="submit")
+			br
+			| !{number}
+		ul
+			each val, index in results
+				li 
+					a(href = "#{val.href}") !{val.title}
