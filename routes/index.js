@@ -3,6 +3,8 @@ var router = express.Router();
 var basex = require('basex');
 var cheerio = require('cheerio');
 var http = require('http');
+var path = require('path');
+var mime = require('mime');
 var fs = require('fs');
 var client = new basex.Session("127.0.0.1", 1984, "admin", "admin");
 client.execute("OPEN Colenso");
@@ -98,16 +100,13 @@ router.get('/search-markup', function(req, res) {
 			for(i = 0; i < paths.length; i++){
 				client.execute("XQUERY doc('Colenso/" + paths[i] + "')",
 				function(errXml,resXml) { 
-					if(!errXml){
-						
-						var $ = cheerio.load(resXml.result, {
-							xmlMode: true
-						});
-						id = $.root().find("TEI").first().attr("xml:id");
-						title = results.shift();
-						list.push({title: title, id: id});
-						console.log(title+" "+id);
-					}
+					var $ = cheerio.load(resXml.result, {
+						xmlMode: true
+					});
+					id = $.root().find("TEI").first().attr("xml:id");
+					title = results.shift();
+					list.push({title: title, id: id});
+					console.log(title+" "+id);
 				});
 			}
 			res.render('search-markup', { visited: true, number: list.length, results: list});
@@ -138,11 +137,14 @@ router.get("/document/:id",function(req,res){
 
 //Document download route
 router.get("/download/:id",function(req,res){
-	
-	var file = fs.createWriteStream(req.params.id+".xml");
-	var request = http.get("document/"+req.params.id, function(response) {
-	  response.pipe(file);
-	});
+	var _dirname = 'Colenso_TEIs/';
+	client.execute(basexQuery + "for $n in (collection('Colenso/')//TEI[@xml:id='" + req.params.id + "'])\n" +
+		"return db:path($n)", function (error, resultDB) {
+			
+			var file =  _dirname + resultDB.result;
+			res.download(file);
+			
+		});
 	
 });
 
