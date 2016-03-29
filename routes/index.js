@@ -19,6 +19,7 @@ router.get("/",function(req,res){
 //SEARCH TEXT
 router.get('/search-text', function(req, res) {
 if(req.query.searchString){
+	//the following section handles logical operators and wildcard input
 	var queryArray = req.query.searchString.split(" ");
 	var queryString = "";
 	var contains1 = "//TEI[. contains text '";
@@ -58,6 +59,7 @@ if(wildcard){
 	queryString = "";
 	contains2 = "";
 }
+//the actual query begins here
 client.execute(basexQuery + contains1 + queryString + contains2,
 function (error, result) {
 	var $;
@@ -67,6 +69,7 @@ function (error, result) {
 		if(req.query.searchString == undefined || req.query.searchString == null){
 			res.render('search-text', { title: 'Colenso Database', results: " "});
 		}else{
+			//if the user has actually inputed something, and no error has occured:
 			$  = cheerio.load(result.result, {
 				xmlMode: true
 			});
@@ -76,6 +79,7 @@ function (error, result) {
 				if(!id){
 					return;
 				}
+				//Note: the href property is used to link to the document's "view" page
 				list.push({title: title, href: "/document/" + id});
 			});
 			res.render('search-text', { visited: true, number: list.length, results: list});
@@ -90,12 +94,17 @@ router.get('/search-markup', function(req, res) {
 	if(req.query.searchString == undefined || req.query.searchString == null){
 		res.render('search-markup', { title: 'Colenso Database', results: " "});
 	}else{
+		//this query finds the actual data the user wants
 		client.execute(basexQuery + req.query.searchString, function (error, result) {
 			var list = [];
 			var results = result.result.split("\n");
+			//this query finds the database path of the documents the data is from
 			client.execute(basexQuery + "for $n in (collection('Colenso/')" + req.query.searchString + ")\n" +
 			"return db:path($n)", function (error2, resultDB) {
 				var paths = resultDB.result.split("\n");
+				//this modifies the database path to give the id of the document
+				//Note: this does not work in all cases (sometimes the file name is different to the id)...
+				//...so will give some dead links. Should have better implementation
 				for(i = 0; i <paths.length; i++){
 					var id = paths[i].replace(".xml", "");
 					id = id.split("/")[2];
@@ -117,6 +126,7 @@ router.get("/browse",function(req,res){
 
 //author display
 router.get("/browse-author/:author",function(req,res){
+	//this section constructs the author string to be searched
 	var authorArray = req.params.author .split("-");
 	var authorQuery = "";
 	for(i = 0; i < authorArray.length; i++){
@@ -124,6 +134,7 @@ router.get("/browse-author/:author",function(req,res){
 		nextWord[0] = nextWord[0].toUpperCase();
 		authorQuery = authorQuery + " " + nextWord;
 	}
+	//query to find doctuments matching the author string
 	client.execute(basexQuery + "(//TEI[. contains text '" + authorQuery +"' ])", 
 		function (error, result) {
 			var list = [];
@@ -147,6 +158,7 @@ router.get("/browse-author/:author",function(req,res){
 
 //Document display route
 router.get("/document/:id",function(req,res){
+	//searches for document containing that id
 	client.execute(basexQuery + "(//TEI[@xml:id= '" + req.params.id + "' ])",
 		function (error, result) {
 			if(error){ console.error(error)}
