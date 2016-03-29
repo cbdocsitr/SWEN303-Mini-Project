@@ -86,29 +86,33 @@ function (error, result) {
 
 //SEARCH MARKUP
 router.get('/search-markup', function(req, res) {
-	if(req.query.searchString == undefined || req.query.searchString == null){
-		res.render('search-markup', { title: 'Colenso Databse', results: " "});
-	}else{
-		client.execute(basexQuery + req.query.searchString, function (error, result) {
-			var list = [];
-			var results = result.result.split("\n");
-			for(i = 0; i < results.length; i++){
-				client.execute(basexQuery + "for $n in (collection('Colenso/')" + results[i] + ")\n" +
-				"return db:path($n)", function (error2, resultDB) {
-					client.execute("XQUERY doc('" + resultDB + "')", function (error3, xmlResult) {
-						var id;
-						var $ = cheerio.load(xmlResult.result, {
+	client.execute(basexQuery + req.query.searchString, function (error, result) {
+		var list = [];
+		var ids = [];
+		var id;
+		var title;
+		var results = result.result.split("\n");
+		client.execute(basexQuery + "for $n in (collection('Colenso/')" + req.query.searchString + ")\n" +
+		"return db:path($n)", function (error2, resultDB) {
+			var paths = resultDB.result.split("\n");
+			for(i = 0; i < paths.length; i++){
+				client.execute("XQUERY doc('Colenso/" + paths[i] + "')",
+				function(errXml,resXml) { 
+					if(!errXml){
+						
+						var $ = cheerio.load(resXml.result, {
 							xmlMode: true
 						});
-						id = $.root().attr("xml:id");
-						console.log(id);
-						list.push({title: results[i], href: "/document/" + id});
-					});
+						id = $.root().find("TEI").first().attr("xml:id");
+						title = results.shift();
+						list.push({title: title, id: id});
+						console.log(title+" "+id);
+					}
 				});
 			}
 			res.render('search-markup', { visited: true, number: list.length, results: list});
 		});
-	}
+	});
 });
 
 //Document display route
@@ -136,7 +140,7 @@ router.get("/document/:id",function(req,res){
 router.get("/download/:id",function(req,res){
 	
 	var file = fs.createWriteStream(req.params.id+".xml");
-	var request = http.get("http://localhost:3000/document/"+req.params.id, function(response) {
+	var request = http.get("document/"+req.params.id, function(response) {
 	  response.pipe(file);
 	});
 	
